@@ -7,7 +7,7 @@ import {
   AlertTriangle, 
   CheckCircle, 
   Info,
-  BarChart3,
+  BarChart3, 
   Globe,
   MessageSquare,
   ExternalLink,
@@ -21,6 +21,7 @@ const App = () => {
   const [error, setError] = useState(null);
 
   // Gemini API Konfiqurasiyası
+  // Qeyd: Bu boş qaldıqda tətbiq yalnız interfeys olaraq görünəcək.
   const apiKey = ""; 
 
   const analyzeScam = async () => {
@@ -60,17 +61,17 @@ const App = () => {
           })
         });
 
-        if (!response.ok) throw new Error('API xətası');
+        if (!response.ok) throw new Error('API xətası və ya açar daxil edilməyib');
         
         const data = await response.json();
         const jsonResponse = JSON.parse(data.candidates[0].content.parts[0].text);
         setResult(jsonResponse);
       } catch (err) {
-        if (retries < maxRetries) {
+        if (retries < maxRetries && apiKey !== "") {
           retries++;
           setTimeout(() => callApi(delay * 2), delay);
         } else {
-          setError("Təhlil zamanı xəta baş verdi. Zəhmət olmasa yenidən yoxlayın.");
+          setError("Təhlil zamanı xəta baş verdi. Zəhmət olmasa API açarını yoxlayın və ya yenidən cəhd edin.");
         }
       } finally {
         setLoading(false);
