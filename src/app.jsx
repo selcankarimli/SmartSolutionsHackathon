@@ -11,7 +11,8 @@ import {
   Globe,
   MessageSquare,
   ExternalLink,
-  Cpu
+  Cpu,
+  RefreshCcw
 } from 'lucide-react';
 
 const App = () => {
@@ -99,26 +100,34 @@ const App = () => {
             <ShieldAlert className="text-white w-8 h-8" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-800">AI Scam & Phishing Detector</h1>
-          <p className="text-slate-500 mt-2">Smart Solutions Hackathon üçün hazırlanmış xüsusi detektor</p>
+          <p className="text-slate-500 mt-2 text-lg">Smart Solutions Hackathon üçün hazırlanmış xüsusi detektor</p>
           
-          <a 
-            href="https://smart-solutions-hackathon.vercel.app/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
-          >
-            <ExternalLink size={14} /> Layihə Veb-saytı
-          </a>
+          <div className="flex justify-center gap-4 mt-4">
+            <a 
+              href="https://smart-solutions-hackathon.vercel.app/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors border-b border-blue-200"
+            >
+              <ExternalLink size={14} /> Layihə Veb-saytı
+            </a>
+            <button 
+              onClick={() => { setInput(''); setResult(null); setError(null); }}
+              className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 font-medium text-sm transition-colors"
+            >
+              <RefreshCcw size={14} /> Yenilə
+            </button>
+          </div>
         </header>
 
         {/* Input Section */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-8">
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-8 transition-all hover:shadow-md">
           <div className="flex flex-col gap-4">
             <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-              <MessageSquare size={16} /> Şübhəli məzmunu daxil edin (Mesaj və ya URL)
+              <MessageSquare size={16} className="text-blue-500" /> Şübhəli məzmunu daxil edin (Mesaj və ya URL)
             </label>
             <textarea
-              className="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-slate-700"
+              className="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-slate-700 resize-none"
               placeholder="Məsələn: 'Hörmətli müştəri, bank hesabınız bloklanıb. Aktivləşdirmək üçün linkə daxil olun...'"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -126,7 +135,7 @@ const App = () => {
             <button
               onClick={analyzeScam}
               disabled={loading || !input.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold py-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold py-4 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
             >
               {loading ? (
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -142,7 +151,7 @@ const App = () => {
 
         {/* Error Handling */}
         {error && (
-          <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl mb-8 flex items-center gap-3">
+          <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl mb-8 flex items-center gap-3 animate-in fade-in zoom-in duration-300">
             <AlertTriangle size={20} />
             <p className="text-sm font-medium">{error}</p>
           </div>
@@ -154,23 +163,23 @@ const App = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               {/* Classification Card */}
-              <div className={`p-6 rounded-3xl border ${getRiskColor(result.risk_level)} flex flex-col items-center text-center justify-center shadow-sm`}>
+              <div className={`p-6 rounded-3xl border transition-all ${getRiskColor(result.risk_level)} flex flex-col items-center text-center justify-center shadow-sm`}>
                 <span className="text-xs font-bold uppercase tracking-widest mb-2 opacity-70">Risk Klassifikasiyası</span>
                 <div className="flex items-center gap-2 mb-2">
                   {result.risk_level === 'Yüksək' ? <ShieldAlert size={32} /> : result.risk_level === 'Orta' ? <ShieldQuestion size={32} /> : <ShieldCheck size={32} />}
-                  <h2 className="text-3xl font-black">{result.risk_level}</h2>
+                  <h2 className="text-3xl font-black tracking-tight">{result.risk_level}</h2>
                 </div>
-                <p className="text-sm font-medium">Bu məzmun potensial təhlükə daşıyır.</p>
+                <p className="text-sm font-medium opacity-90">Təhlükə analizi tamamlandı.</p>
               </div>
 
               {/* Confidence Score */}
               <div className="bg-white p-6 rounded-3xl border border-slate-200 flex flex-col items-center text-center justify-center shadow-sm">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Etibarlılıq Göstəricisi</span>
                 <div className="relative flex items-center justify-center">
-                   <svg className="w-24 h-24">
+                   <svg className="w-24 h-24 transform -rotate-90">
                       <circle className="text-slate-100" strokeWidth="8" stroke="currentColor" fill="transparent" r="40" cx="48" cy="48" />
                       <circle 
-                        className="text-blue-500" 
+                        className="text-blue-500 transition-all duration-1000 ease-out" 
                         strokeWidth="8" 
                         strokeDasharray={251.2} 
                         strokeDashoffset={251.2 - (251.2 * result.confidence_score) / 100} 
@@ -190,7 +199,7 @@ const App = () => {
               <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <Info size={18} className="text-blue-500" /> Məzmun Analizi Nəticələri
               </h3>
-              <p className="text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl">
+              <p className="text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 {result.analysis_summary}
               </p>
             </div>
@@ -200,36 +209,39 @@ const App = () => {
               <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <AlertTriangle size={18} className="text-amber-500" /> Risk İndikatorları (Minimum 3)
               </h3>
-              <ul className="space-y-3">
+              <ul className="grid grid-cols-1 gap-3">
                 {result.risk_indicators.map((indicator, index) => (
-                  <li key={index} className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-slate-700">
-                    <span className="bg-white border border-slate-200 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">{index + 1}</span>
-                    <span className="text-sm font-medium">{indicator}</span>
+                  <li key={index} className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-slate-700 transition-hover hover:bg-white hover:border-blue-100">
+                    <span className="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">{index + 1}</span>
+                    <span className="text-sm font-medium leading-tight">{indicator}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Model Evaluation Results */}
-            <div className="bg-slate-800 rounded-3xl p-6 text-white shadow-xl">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <BarChart3 size={80} />
+              </div>
+              <h3 className="text-lg font-bold mb-4 flex items-center gap-2 relative z-10">
                 <BarChart3 size={18} className="text-blue-400" /> Modelin Qiymətləndirilməsi
               </h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-slate-700/50 p-4 rounded-2xl text-center border border-slate-600">
-                  <div className="text-xs text-slate-400 uppercase font-bold mb-1">Precision</div>
+              <div className="grid grid-cols-3 gap-4 relative z-10">
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl text-center border border-white/10">
+                  <div className="text-[10px] text-slate-400 uppercase font-bold mb-1 tracking-wider">Precision</div>
                   <div className="text-xl font-mono text-blue-300">{(result.model_metrics.precision * 100).toFixed(1)}%</div>
                 </div>
-                <div className="bg-slate-700/50 p-4 rounded-2xl text-center border border-slate-600">
-                  <div className="text-xs text-slate-400 uppercase font-bold mb-1">Recall</div>
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl text-center border border-white/10">
+                  <div className="text-[10px] text-slate-400 uppercase font-bold mb-1 tracking-wider">Recall</div>
                   <div className="text-xl font-mono text-green-300">{(result.model_metrics.recall * 100).toFixed(1)}%</div>
                 </div>
-                <div className="bg-slate-700/50 p-4 rounded-2xl text-center border border-slate-600">
-                  <div className="text-xs text-slate-400 uppercase font-bold mb-1">F1 Score</div>
+                <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl text-center border border-white/10">
+                  <div className="text-[10px] text-slate-400 uppercase font-bold mb-1 tracking-wider">F1 Score</div>
                   <div className="text-xl font-mono text-amber-300">{(result.model_metrics.f1_score * 100).toFixed(1)}%</div>
                 </div>
               </div>
-              <p className="mt-4 text-[10px] text-slate-400 italic text-center">
+              <p className="mt-4 text-[10px] text-slate-500 italic text-center">
                 * Bu metrikalar daxil edilmiş məzmunun tipi üzrə modelin tarixi performans simulyasiyasıdır.
               </p>
             </div>
@@ -238,15 +250,23 @@ const App = () => {
         )}
 
         {/* Footer info for Hackathon */}
-        <footer className="mt-12 text-center text-slate-400 text-xs">
-          <p>© 2026 Smart Solutions Hackathon Team - Scam Detector Project</p>
+        <footer className="mt-12 text-center text-slate-400 text-xs py-8">
+          <p className="font-medium">© 2026 Smart Solutions Hackathon Team</p>
+          <p className="mt-1">Scam & Phishing Detection System v2.0</p>
         </footer>
 
         {/* Placeholder if no result */}
         {!result && !loading && (
-          <div className="text-center py-12 opacity-40">
-            <Globe size={48} className="mx-auto mb-4 text-slate-300" />
-            <p className="text-slate-500">Analizə başlamaq üçün yuxarıdakı sahəyə məlumat daxil edin</p>
+          <div className="text-center py-20 animate-in fade-in duration-1000">
+            <div className="bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Globe size={40} className="text-slate-300" />
+            </div>
+            <p className="text-slate-400 font-medium">Analizə başlamaq üçün yuxarıdakı sahəyə məlumat daxil edin</p>
+            <div className="flex justify-center gap-2 mt-4">
+              <span className="w-2 h-2 rounded-full bg-slate-200"></span>
+              <span className="w-2 h-2 rounded-full bg-slate-200"></span>
+              <span className="w-2 h-2 rounded-full bg-slate-200"></span>
+            </div>
           </div>
         )}
       </div>
