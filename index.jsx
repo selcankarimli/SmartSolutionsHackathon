@@ -9,7 +9,9 @@ import {
   Info,
   BarChart3,
   Globe,
-  MessageSquare
+  MessageSquare,
+  ExternalLink,
+  Cpu
 } from 'lucide-react';
 
 const App = () => {
@@ -96,7 +98,16 @@ const App = () => {
             <ShieldAlert className="text-white w-8 h-8" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-800">AI Scam & Phishing Detector</h1>
-          <p className="text-slate-500 mt-2">Fırıldaq zəng və mesajları AI gücü ilə saniyələr ərzində müəyyən edin</p>
+          <p className="text-slate-500 mt-2">Smart Solutions Hackathon üçün hazırlanmış xüsusi detektor</p>
+          
+          <a 
+            href="https://smart-solutions-hackathon.vercel.app/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+          >
+            <ExternalLink size={14} /> Layihə Veb-saytı
+          </a>
         </header>
 
         {/* Input Section */}
@@ -107,7 +118,7 @@ const App = () => {
             </label>
             <textarea
               className="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-slate-700"
-              placeholder="Məsələn: 'Təbriklər! 1000 AZN qazandınız. Linkə daxil olun...'"
+              placeholder="Məsələn: 'Hörmətli müştəri, bank hesabınız bloklanıb. Aktivləşdirmək üçün linkə daxil olun...'"
               value={input}
               onChange={(e) => setInput(e.target.value)}
             />
@@ -120,7 +131,7 @@ const App = () => {
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <Search size={20} />
+                  <Cpu size={20} />
                   Analiz et (Analyze)
                 </>
               )}
@@ -224,6 +235,11 @@ const App = () => {
 
           </div>
         )}
+
+        {/* Footer info for Hackathon */}
+        <footer className="mt-12 text-center text-slate-400 text-xs">
+          <p>© 2026 Smart Solutions Hackathon Team - Scam Detector Project</p>
+        </footer>
 
         {/* Placeholder if no result */}
         {!result && !loading && (
