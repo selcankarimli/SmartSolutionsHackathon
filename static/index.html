@@ -1,0 +1,126 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import joblib
+import time
+import os
+import re
+
+# WhatsApp üçün Twilio inteqrasiyası
+try:
+    from twilio.twiml.messaging_response import MessagingResponse
+except ImportError:
+    # Twilio kitabxanası yoxdursa, xəta verməməsi üçün placeholder
+    MessagingResponse = None
+
+app = Flask(__name__)
+CORS(app)
+
+# Resursların yüklənməsi
+def load_ai_assets():
+    try:
+        model = joblib.load('model/classifier.pkl')
+        vectorizer = joblib.load('model/vectorizer.pkl')
+        accuracy = joblib.load('model/accuracy_score.pkl')
+        return model, vectorizer, accuracy
+    except:
+        return None, None, 0
+
+def perform_analysis(text):
+    """Mətni analiz edən əsas məntiq funksiyası"""
+    model, vectorizer, model_accuracy = load_ai_assets()
+    if not model:
+        return None, "Model tapılmadı."
+
+    # 1. Model Proqnozu
+    text_vec = vectorizer.transform([text])
+    prediction = model.predict(text_vec)[0]
+    probabilities = model.predict_proba(text_vec)[0]
+    confidence = round(max(probabilities) * 100, 1)
+    
+    # 2. Risk Klassifikasiyası
+    if prediction == 1:
+        risk_level = "KRİTİK" if confidence > 85 else "ŞÜBHƏLİ"
+    else:
+        risk_level = "TƏHLÜKƏSİZ"
+
+    # 3. Risk İndikatorları
+    indicators = []
+    text_lower = text.lower()
+    if re.search(r'http[s]?://', text_lower):
+        indicators.append("Aktiv Link")
+    if any(k in text_lower for k in ['bank', 'kart', 'şifrə', 'blok', 'qazandınız', 'təcili']):
+        indicators.append("Şübhəli Açar Sözlər")
+    if "google.com/search?q=" in text_lower:
+        indicators.append("Link Maskalanması")
+
+    return {
+        "risk_level": risk_level,
+        "confidence": confidence,
+        "indicators": indicators,
+        "accuracy": model_accuracy
+    }, None
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    data = request.json
+    text = data.get('text', '')
+    
+    if not text:
+        return jsonify({"error": "Mətn daxil edilməyib"}), 400
+
+    start_time = time.time()
+    result, error = perform_analysis(text)
+    
+    if error:
+        return jsonify({"error": error}), 500
+
+    execution_time = round(time.time() - start_time, 4)
+
+    return jsonify({
+        "risk_level": result["risk_level"],
+        "confidence_score": result["confidence"],
+        "analysis_summary": f"Sistem analizi: {result['risk_level']}.",
+        "risk_indicators": result["indicators"] if result["indicators"] else ["Ciddi risk tapılmadı"],
+        "model_eval": {
+            "accuracy": f"{result['accuracy'] * 100:.2f}%",
+            "time": f"{execution_time} san",
+            "version": "PhishGuard AI v2.1"
+        }
+    })
+
+# --- WHATSAPP BOT ENDPOINT ---
+@app.route('/whatsapp', methods=['POST'])
+def whatsapp_bot():
+    if MessagingResponse is None:
+        return "Twilio library not installed", 500
+
+    # WhatsApp-dan gələn mesajı alırıq
+    incoming_msg = request.values.get('Body', '').strip()
+    
+    # Analiz funksiyasını çağırırıq
+    result, error = perform_analysis(incoming_msg)
+    
+    resp = MessagingResponse()
+    msg = resp.message()
+
+    if error:
+        msg.body("Bağışlayın, AI modeli hazırda aktiv deyil.")
+    else:
+        # WhatsApp üçün cavab formatı
+        risk_icon = "🔴" if result["risk_level"] == "KRİTİK" else ("🟡" if result["risk_level"] == "ŞÜBHƏLİ" else "🟢")
+        
+        reply = f"{risk_icon} *PhishGuard Analiz Nəticəsi*\n\n"
+        reply += f"*Risk Səviyyəsi:* {result['risk_level']}\n"
+        reply += f"*Etibarlılıq:* {result['confidence']}%\n"
+        
+        if result["indicators"]:
+            reply += "\n*Təhlükə İndikatorları:*\n- " + "\n- ".join(result["indicators"])
+        
+        reply += f"\n\n_Model Dəqiqliyi: {result['accuracy'] * 100:.2f}%_"
+        
+        msg.body(reply)
+
+    return str(resp)
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
